@@ -6,7 +6,7 @@
 #define IRpin       2
 
 // the maximum pulse we'll listen for - 65 milliseconds is a long time
-#define MAXPULSE 15000
+#define MAXPULSE 5000
 #define MAXPULSES 50
 
 // what our timing resolution should be, larger is better
@@ -123,29 +123,4 @@ int listenForIR(void) {
     // we read one high-low pulse successfully, continue!
     currentpulse++;
   }
-}
-
-// Deprecated. TO DELETE!
-void printpulses(void) {
-  Serial.println("\n\r\n\rReceived: \n\rOFF \tON");
-  for (uint8_t i = 0; i < currentpulse; i++) {
-    Serial.print(pulses[i][0] * RESOLUTION, DEC);
-    Serial.print(" usec, ");
-    Serial.print(pulses[i][1] * RESOLUTION, DEC);
-    Serial.println(" usec");
-  }
-  
-  // print it in a 'array' format
-  Serial.println("int IRsignal[] = {");
-  Serial.println("// ON, OFF (in 10's of microseconds)");
-  for (uint8_t i = 0; i < currentpulse-1; i++) {
-    Serial.print("\t"); // tab
-    Serial.print(pulses[i][1] * RESOLUTION / 10, DEC);
-    Serial.print(", ");
-    Serial.print(pulses[i+1][0] * RESOLUTION / 10, DEC);
-    Serial.println(",");
-  }
-  Serial.print("\t"); // tab
-  Serial.print(pulses[currentpulse-1][1] * RESOLUTION / 10, DEC);
-  Serial.print(", 0};");
 }
