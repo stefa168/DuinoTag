@@ -36,17 +36,18 @@ void loop(void) {
   
   numberpulses = listenForIR();
   
-  Serial.print("Ricevuto un segnale lungo ");
+  Serial.print("New Signal: ");
   Serial.print(numberpulses);
-  Serial.println(" impulsi.");
+  Serial.println(" pulses long.");
+  // Receive - Compare
   Serial.println("R\tC");
-  for(int i=0; i<numberpulses-1; i++){
+  for(int i=0; i<numberpulses/*-1*/; i++){
     int oncode  = pulses[i][1] * RESOLUTION;
     
     Serial.print(oncode);
     Serial.print(" - ");    
     
-    // Evaluate teh type of code received.
+    // Evaluate the type of code received.
     if(abs(oncode - IR_HEAD) <= (oncode * FUZZINESS / 100)){
       Serial.print(IR_HEAD);
       Serial.println(" HEAD");
