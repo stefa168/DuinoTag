@@ -26,22 +26,38 @@
 uint16_t pulses[MAXPULSES][2]; // pair is high and low pulse
 uint8_t currentpulse = 0; // index for pulses we're storing
 
+int numberpulses;
+
 void setup(void) {
   Serial.begin(9600);
   Serial.println("Ready to decode IR!");
 }
 
 void loop(void) {
-  int numberpulses;
+  // Reset the number of pulses!
+  numberpulses = 0;
   
   numberpulses = listenForIR();
   
   Serial.print("New Signal: ");
   Serial.print(numberpulses);
   Serial.println(" pulses long.");
+  
+  // If the code isn't correct or is a diffrent code (like one of a remote) we just delete all and return null so we restart.
+  if(!convertIR()){
+    Serial.println("An error occurred while converting.");
+    return;
+  }
+  
+  // Otherwise
+  
+  Serial.println();
+}
+
+boolean convertIR(void){
   // Receive - Compare
   Serial.println("R\tC");
-  for(int i=0; i<numberpulses/*-1*/; i++){
+  for(int i=0; i<numberpulses; i++){
     int oncode  = pulses[i][1] * RESOLUTION;
     
     Serial.print(oncode);
@@ -60,10 +76,10 @@ void loop(void) {
     } else {
       Serial.print("?");
       Serial.println(" ERR");
+      // There is something that isn't correct!
+      return false;
     }
-    
   }
-  Serial.println();
 }
 
 // Function for IR listening. In a future version I might try to make all this multitasking so I can relax more.
