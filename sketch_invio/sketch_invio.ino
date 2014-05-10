@@ -20,7 +20,7 @@ void loop(){
   digitalWrite(13, HIGH); // Let's just turn on the LED on the board to show that we are sending something!
   SendCode();
   digitalWrite(13, LOW);  // Now we turn off the LED.
-  delay(1300);
+  delay(10000);
 }
 
 void pulseIR(long microsecs) {
@@ -57,17 +57,30 @@ void pauseIR(long microsecs) {
 // For now this function is predefined but I'll modify it 
 // so that we can prepare a code in an array and then we can send it.
 void SendCode(){
-  // The IR head identifies the communication and should 
-  // be as unique as possible, but it must
+  // The IR head identifies the communication and should be as unique as possible, but it must
   // stay the same for all the time.
   pulseIR(IR_HEAD);
   
-  // Let's make the code a little random!
-  for(int i=0, r = random(2,17); i<r; i++){
-    if(random(0,2)==1){
-      pulseIR(IR_ONE);
-    } else {
-      pulseIR(IR_ZERO);
+  // The code.
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  
+  // I tried to do something useful, but for now we won't use it.
+  /*for(int i=0; i<sizeof(msg); i++){
+    switch(msg[i]){
+      case true:  pulseIR(IR_ONE);
+                 break;
+      case false: pulseIR(IR_ZERO);
+                 break;
     }
-  }
+  }*/
 }

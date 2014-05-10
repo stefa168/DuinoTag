@@ -78,9 +78,6 @@ void loop(void) {
   Serial.print(numberpulses);
   Serial.println(" pulses long.");*/
   
-  lcd.setCursor(0,2);
-  lcd.print("                    ");
-  
   for(int i=0; i<numberpulses; i++){
     //Serial.print(data[i]);
     lcd.setCursor(i,2);
