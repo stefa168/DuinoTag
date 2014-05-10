@@ -65,6 +65,14 @@ void SendCode(){
   pulseIR(IR_ONE);
   pulseIR(IR_ZERO);
   pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
+  pulseIR(IR_ZERO);
+  pulseIR(IR_ONE);
   
   // I tried to do something useful, but for now we won't use it.
   /*for(int i=0; i<sizeof(msg); i++){
