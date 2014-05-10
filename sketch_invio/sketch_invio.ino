@@ -12,7 +12,7 @@ void setup(){
   
   digitalWrite(13, LOW);
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Ready to send!");
 }
 

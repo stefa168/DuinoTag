@@ -23,13 +23,11 @@
 #define IR_ZERO 600
 
 // we will store up to MAXPULSES
-uint16_t pulses[MAXPULSES][2]; // pair is high and low pulse
-uint8_t currentpulse = 0; // index for pulses we're storing
-
-int numberpulses;
+int data[MAXPULSES]; // pair is high and low pulse
+int numberpulses; // index for pulses we're storing
 
 void setup(void) {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Ready to decode IR!");
 }
 
@@ -37,90 +35,77 @@ void loop(void) {
   // Reset the number of pulses!
   numberpulses = 0;
   
-  numberpulses = listenForIR();
+  
+  // If the code isn't correct or is a diffrent code (like one of a remote) we just delete all and return null so we restart.
+  if(listenForIR()){
+    Serial.println("An error occurred while converting.");
+    return;
+  }
   
   Serial.print("New Signal: ");
   Serial.print(numberpulses);
   Serial.println(" pulses long.");
   
-  // If the code isn't correct or is a diffrent code (like one of a remote) we just delete all and return null so we restart.
-  if(!convertIR()){
-    Serial.println("An error occurred while converting.");
-    return;
+  for(int i=0; i<numberpulses; i++){
+    Serial.print(data[i]);
   }
-  
-  // Otherwise
   
   Serial.println();
 }
 
-boolean convertIR(void){
-  // Receive - Compare
-  Serial.println("R\tC");
-  for(int i=0; i<numberpulses; i++){
-    int oncode  = pulses[i][1] * RESOLUTION;
-    
-    Serial.print(oncode);
-    Serial.print(" - ");    
-    
-    // Evaluate the type of code received.
-    if(abs(oncode - IR_HEAD) <= (oncode * FUZZINESS / 100)){
-      Serial.print(IR_HEAD);
-      Serial.println(" HEAD");
-    } else if(abs(oncode - IR_ONE) <= (oncode * FUZZINESS / 100)){
-      Serial.print(IR_ONE);
-      Serial.println(" ONE");
-    } else if(abs(oncode - IR_ZERO) <= (oncode * FUZZINESS / 100)){
-      Serial.print(IR_ZERO);
-      Serial.println(" ZERO");
-    } else {
-      Serial.print("?");
-      Serial.println(" ERR");
-      // There is something that isn't correct!
-      return false;
-    }
-  }
-}
 
 // Function for IR listening. In a future version I might try to make all this multitasking so I can relax more.
 int listenForIR(void) {
-  currentpulse = 0;
- 
   // Let's keep counting until we don't return the number of pulses recorded.
   while (1) {
-    uint16_t highpulse, lowpulse;  // temporary storage timing
-    highpulse = lowpulse = 0; // start out with no pulse length
+    int highpulse, lowpulse;  // Temporary storage timing
+    highpulse = lowpulse = 0; // Start out with no pulse length
  
 //  while (digitalRead(IRpin)) { // this is too slow!
     while (IRpin_PIN & (1 << IRpin)) {
-       // pin is still HIGH
+       // Pin is still HIGH
  
-       // count off another few microseconds
+       // Count off another few microseconds
        highpulse++;
        delayMicroseconds(RESOLUTION);
  
        // If the pulse is too long, we 'timed out' - either nothing
        // was received or the code is finished, so print what
        // we've grabbed so far, and then reset
-       if ((highpulse >= MAXPULSE) && (currentpulse != 0)) {
-         return currentpulse;
+       if ((highpulse >= MAXPULSE) && (numberpulses != 0)) {
+         return false;
        }
     }
-    // we didn't time out so lets stash the reading
-    pulses[currentpulse][0] = highpulse;
  
-    // same as above
+    // Same as above.
     while (! (IRpin_PIN & _BV(IRpin))) {
        // pin is still LOW
        lowpulse++;
        delayMicroseconds(RESOLUTION);
-       if ((lowpulse >= MAXPULSE)  && (currentpulse != 0)) {
-         return currentpulse;
+       if ((lowpulse >= MAXPULSE)  && (numberpulses != 0)) {
+         return false;
        }
     }
-    pulses[currentpulse][1] = lowpulse;
+    
+    // But this time we compare the received code to the diffrent 
+    // ones so we get an array alerady complete
+    // of all we need to work!
+    
+    int oncode = lowpulse * RESOLUTION;
+    
+    if(numberpulses == 0){
+      if(abs(oncode - IR_HEAD) > (oncode * FUZZINESS / 100)){
+        return true;
+      } 
+    } else if(abs(oncode - IR_ONE) <= (oncode * FUZZINESS / 100)){
+      data[numberpulses-1] = 1;
+    } else if(abs(oncode - IR_ZERO) <= (oncode * FUZZINESS / 100)){
+      data[numberpulses-1] = 0;
+    } else {
+      return true;
+    }
  
     // we read one high-low pulse successfully, continue!
-    currentpulse++;
+    numberpulses++;
   }
 }
