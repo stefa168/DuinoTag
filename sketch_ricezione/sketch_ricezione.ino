@@ -50,7 +50,7 @@ void loop(void) {
     Serial.print(data[i]);
   }
   
-  Serial.println();
+  Serial.println("\n");
 }
 
 
@@ -91,15 +91,15 @@ int listenForIR(void) {
     // ones so we get an array alerady complete
     // of all we need to work!
     
-    int oncode = lowpulse * RESOLUTION;
+    lowpulse *= RESOLUTION;
     
     if(numberpulses == 0){
-      if(abs(oncode - IR_HEAD) > (oncode * FUZZINESS / 100)){
+      if(abs(lowpulse - IR_HEAD) > (lowpulse * FUZZINESS / 100)){
         return true;
       } 
-    } else if(abs(oncode - IR_ONE) <= (oncode * FUZZINESS / 100)){
+    } else if(abs(lowpulse - IR_ONE) <= (lowpulse * FUZZINESS / 100)){
       data[numberpulses-1] = 1;
-    } else if(abs(oncode - IR_ZERO) <= (oncode * FUZZINESS / 100)){
+    } else if(abs(lowpulse - IR_ZERO) <= (lowpulse * FUZZINESS / 100)){
       data[numberpulses-1] = 0;
     } else {
       return true;
