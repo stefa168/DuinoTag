@@ -6,7 +6,7 @@
 #define IRpin       2
 
 // the maximum pulse we'll listen for - 65 milliseconds is a long time
-#define MAXPULSE 5000
+#define MAXPULSE 2500
 #define MAXPULSES 50
 
 // what our timing resolution should be, larger is better
