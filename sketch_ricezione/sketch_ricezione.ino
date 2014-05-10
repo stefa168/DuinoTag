@@ -22,35 +22,69 @@
 #define IR_ONE 1200
 #define IR_ZERO 600
 
-// we will store up to MAXPULSES
-int data[MAXPULSES]; // pair is high and low pulse
-int numberpulses; // index for pulses we're storing
+// We will store up to MAXPULSES
+int data[MAXPULSES]; // Pair is high and low pulse
+int numberpulses; // Index for pulses we're storing
+int errors = 0;
+
+// LCD Stuff - So we don't need Serial anymore!
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
 
 void setup(void) {
+  /* I'll just comment out serial functions for now.
   Serial.begin(115200);
+  
   Serial.println("Ready to decode IR!");
+  */
+  
+  // We start the LCD. Edit this to your LCD's size (columns, rows)
+  lcd.begin(20, 4);
+  
+  lcd.setCursor(5, 1);
+  delay(2000);
+  lcd.print("Starting");
+  delay(600);
+  lcd.print(".");
+  delay(600);
+  lcd.print(".");
+  delay(600);
+  lcd.print(".");
+  delay(4000);
+  lcd.clear();
 }
 
 void loop(void) {
   // Reset the number of pulses!
   numberpulses = 0;
   
-  
+  lcd.setCursor(0,0);
+  lcd.print("Status: Listening");
+  lcd.setCursor(0,1);
+  lcd.print("Code: ");
+  lcd.setCursor(0,3);
+  lcd.print("Errors: ");
+  lcd.print(errors);
   // If the code isn't correct or is a diffrent code (like one of a remote) we just delete all and return null so we restart.
   if(listenForIR()){
-    Serial.println("An error occurred while converting.");
+    //Serial.println("An error occurred while converting.");
+    lcd.setCursor(0,0);
+    lcd.print("Status: Error");
     return;
   }
   
-  Serial.print("New Signal: ");
+  /*Serial.print("New Signal: ");
   Serial.print(numberpulses);
-  Serial.println(" pulses long.");
+  Serial.println(" pulses long.");*/
   
   for(int i=0; i<numberpulses; i++){
-    Serial.print(data[i]);
+    //Serial.print(data[i]);
+    lcd.setCursor(i,2);
+    lcd.print(data[i]);
   }
   
-  Serial.println("\n");
+  //Serial.println("\n");
 }
 
 
