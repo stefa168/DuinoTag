@@ -72,15 +72,15 @@ void loop(void) {
   
   if(data[0] == 1){
     Serial.print("SHOT ID ");
-    shotid = data[1]*128 + data[2]*64 + data[3]*32 + data[4]*16 + data[5]*8 + data[6]*4 + data[7]*2 + data[8];
+    shotid = data[1]*64 + data[2]*32 + data[3]*16 + data[4]*8 + data[5]*4 + data[6]*2 + data[7];
     Serial.print(shotid);
     Serial.print(" TEAM ");
-    team = data[9]*4 + data[10]*2 + data[11];
+    team = data[8]*4 + data[9]*2 + data[10];
     Serial.print(team);
     Serial.print(" DAM ");
-    damage = data[12]*8 + data[13]*4 + data[14]*2 + data[15];
+    damage = data[11]*8 + data[12]*4 + data[13]*2 + data[14];
     Serial.print(damages[damage]);
-    switch(data[16]){
+    switch(data[15]){
       case 0: Serial.println(" T 1 .");
               break;
       case 1: Serial.println(" T 2 .");
