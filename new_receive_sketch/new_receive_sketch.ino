@@ -21,6 +21,7 @@ LiquidCrystal lcd(7, 8, 2, 4, 10, 12);
 
 // Packet Section
 unsigned long receivedData = 0;
+unsigned int receivedDataLength = 0;
 // Shot Section
 byte receivedPlayerID = 0;
 byte receivedPlayerTeam = 0;
@@ -76,15 +77,21 @@ void setup()
   lcd.begin(20, 4);
   lcd.setCursor(4,1);
   lcd.print("Starting up...");
+  
   delay(900);
+  
   Serial.begin(115200);
   Serial.println("Version 1.3 R1");
+  
   lcd.setCursor(3,2);
   lcd.print("Version 1.3 R1");
+  
   delay(2100);
+  
   lcd.clear();
   lcd.setCursor(3,1);
   lcd.print("Testing leds..");
+  
   pinMode(RledPIN, OUTPUT);
   pinMode(GledPIN, OUTPUT);
   pinMode(BledPIN, OUTPUT);
@@ -108,15 +115,14 @@ void setup()
 void loop() {
   if (irrecv.decode(&results)) {
     receivedData = results.value;
+    Serial.println(receivedData, HEX);
+    Serial.println(receivedData, DEC);
     Serial.println(receivedData, BIN);
     irrecv.resume(); // Receive the next value
   }
-  if(state == 0){
-    state = 1;
-  } else if(state == 1){
-    // Stand By Mode
-    
-  }
+  
+  
+  
 }
 
 
