@@ -210,6 +210,7 @@ void loop() {
     Serial.print(damages[receivedDamageID]);
     Serial.println(")");
     #endif
+    
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Hit!");
@@ -223,29 +224,10 @@ void loop() {
     lcd.print(damages[receivedDamageID]);
     lcd.print(" ");
     lcd.write(byte(0));
-    
   }
   
   
 }
-
-
-/*
-void dump(decode_results *results) {
-  int count = results->rawlen;
-  if (results->decode_type == DTAG) {
-    Serial.print("Decoded DTAG: ");
-  } 
-  
-  Serial.print(results->value, HEX);
-  Serial.print(" (");
-  Serial.print(results->bits, DEC);
-  Serial.println(" bits)");
-  Serial.print("Raw (");
-  Serial.print(count, DEC);
-  Serial.print("): ");
-}
-*/
 
 void applyColor(byte team){
   if(team < 0 || team > 7){
