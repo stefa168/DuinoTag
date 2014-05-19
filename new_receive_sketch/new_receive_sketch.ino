@@ -7,6 +7,8 @@
  * JVC and Panasonic protocol added by Kristian Lauszus (Thanks to zenwheel and other people at the original blog post)
  */
 
+//#define DEBUG
+
 // Receiver section
 #include <IRremote.h>
 int RECV_PIN = 11;
@@ -18,14 +20,26 @@ decode_results results;
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(7, 8, 2, 4, 10, 12);
 
+byte cuore[8] = {  0b00000,
+                   0b00000,
+                   0b01010,
+                   0b11111,
+                   0b11111,
+                   0b01110,
+                   0b00100,
+                   0b00000
+                };
+
 
 // Packet Section
 unsigned long receivedData = 0;
 unsigned int receivedDataLength = 0;
+
 // Shot Section
 byte receivedPlayerID = 0;
 byte receivedPlayerTeam = 0;
 byte receivedDamageID = 0;
+  
 // Command Section
 
 
@@ -52,8 +66,18 @@ byte teamColor[][3] = { {255, 255, 255}, // White/Admin/Referee Team
                         { 0,  255,  0 }, // Green Team
                         { 0,   0,  255}, // Blue Team
                         {255, 128,  0 }, // Yellow Team
-                        { 0,  255, 255}, // Sky-Blue Team
+                        { 0,  255, 255}, // Cyan Team
                         {128,  0,  255}  // Violet Team
+                      };
+                      
+String teamNames[] = {"Admin",
+                      "Dead",
+                      "Red",
+                      "Green",
+                      "Blue",
+                      "Yellow",
+                      "Cyan",
+                      "Violet"
                       };
                    
 // End System Section
@@ -75,13 +99,18 @@ byte error = 0;
 void setup()
 {
   lcd.begin(20, 4);
-  lcd.setCursor(4,1);
+  
+  lcd.createChar(0, cuore);
+  
+  lcd.setCursor(3,1);
   lcd.print("Starting up...");
   
   delay(900);
   
+  #ifdef DEBUG
   Serial.begin(115200);
   Serial.println("Version 1.3 R1");
+  #endif
   
   lcd.setCursor(3,2);
   lcd.print("Version 1.3 R1");
@@ -113,14 +142,89 @@ void setup()
 }
 
 void loop() {
+  if(receivedDataLength)
+    resetReceivedData();
+  
   if (irrecv.decode(&results)) {
     receivedData = results.value;
+    receivedDataLength = results.bits;
+    #ifdef DEBUG
+    Serial.println("\n\nNew Code:");
+    Serial.print("Length: ");
+    Serial.println(receivedDataLength);
+    Serial.print("HEX: ");
     Serial.println(receivedData, HEX);
+    Serial.print("DEC: ");
     Serial.println(receivedData, DEC);
+    Serial.print("BIN: ");
     Serial.println(receivedData, BIN);
+    #endif
     irrecv.resume(); // Receive the next value
   }
   
+  // User
+  if(receivedDataLength == 16){
+    for(int i=0; i<7; i++){
+      if(receivedData & 0x2000){
+        receivedPlayerID = (receivedPlayerID << 1) | 1;
+      } else {
+        receivedPlayerID <<= 1;
+      }
+      receivedData <<= 1;
+    }
+    #ifdef DEBUG
+    Serial.print("Player ID: ");
+    Serial.println(receivedPlayerID);
+    #endif
+    
+    // Team
+    for(int i=0; i<3; i++){
+      if(receivedData & 0x2000){
+        receivedPlayerTeam = (receivedPlayerTeam << 1) | 1;
+      } else {
+        receivedPlayerTeam <<= 1;
+      }
+      receivedData <<= 1;
+    }
+    #ifdef DEBUG
+    Serial.print("Team ID: ");
+    Serial.print(receivedPlayerTeam);
+    Serial.print("(");
+    Serial.print(teamNames[receivedPlayerTeam]);
+    Serial.println(")");
+    #endif
+    
+    // Damage
+    for(int i=0; i<4; i++){
+      if(receivedData & 0x2000){
+        receivedDamageID = (receivedDamageID << 1) | 1;
+      } else {
+        receivedDamageID <<= 1;
+      }
+      receivedData <<= 1;
+    }
+    #ifdef DEBUG
+    Serial.print("Damage ID: ");
+    Serial.print(receivedDamageID);
+    Serial.print("(");
+    Serial.print(damages[receivedDamageID]);
+    Serial.println(")");
+    #endif
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Hit!");
+    lcd.setCursor(0,1);
+    lcd.print("Player ");
+    lcd.print(receivedPlayerID);
+    lcd.setCursor(0,2);
+    lcd.print(teamNames[receivedPlayerTeam]);
+    lcd.setCursor(0,3);
+    lcd.print("-");
+    lcd.print(damages[receivedDamageID]);
+    lcd.print(" ");
+    lcd.write(byte(0));
+    
+  }
   
   
 }
@@ -155,4 +259,15 @@ void rgbColor(byte r, byte g, byte b){
   analogWrite(RledPIN, r);
   analogWrite(GledPIN, g);
   analogWrite(BledPIN, b);
+}
+
+void resetReceivedData(){
+  // General section
+  receivedData = 0;
+  receivedDataLength = 0;
+  
+  // Shot Section
+  receivedPlayerID = 0;
+  receivedPlayerTeam = 0;
+  receivedDamageID = 0;
 }

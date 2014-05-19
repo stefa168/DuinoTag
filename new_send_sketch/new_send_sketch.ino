@@ -102,7 +102,7 @@ void loop() {
   
   
   digitalWrite(13, HIGH);
-  irsend.sendDtag(dataToSend, 16, 56);
+  irsend.sendDtag(dataToSend, 16, 38);
   digitalWrite(13, LOW);
   Serial.println("Sent.\n");
   
