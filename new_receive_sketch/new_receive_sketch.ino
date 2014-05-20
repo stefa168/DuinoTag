@@ -7,7 +7,7 @@
  * JVC and Panasonic protocol added by Kristian Lauszus (Thanks to zenwheel and other people at the original blog post)
  */
 
-//#define DEBUG
+#define DEBUG
 
 // Receiver section
 #include <IRremote.h>
@@ -30,6 +30,62 @@ byte cuore[8] = {  0b00000,
                    0b00000
                 };
 
+// From full to empty
+byte battery[][8] = {{ 0b01110,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111 },
+                       
+                     { 0b11111,
+                       0b11111,
+                       0b10001,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111 },
+                       
+                     { 0b11111,
+                       0b11111,
+                       0b10001,
+                       0b10001,
+                       0b11111,
+                       0b11111,
+                       0b11111,
+                       0b11111 },
+                     
+                     { 0b11111,
+                       0b11111,
+                       0b10001,
+                       0b10001,
+                       0b10001,
+                       0b11111,
+                       0b11111,
+                       0b11111 },
+                       
+                     { 0b11111,
+                       0b11111,
+                       0b10001,
+                       0b10001,
+                       0b10001,
+                       0b10001,
+                       0b11111,
+                       0b11111 },
+                     
+                     { 0b11111,
+                       0b11111,
+                       0b10001,
+                       0b10001,
+                       0b10001,
+                       0b10001,
+                       0b10001,
+                       0b11111 }
+                    };
+
 
 // Packet Section
 unsigned long receivedData = 0;
@@ -40,8 +96,10 @@ byte receivedPlayerID = 0;
 byte receivedPlayerTeam = 0;
 byte receivedDamageID = 0;
   
-// Command Section
-
+// Command (3 bytes) Section
+byte receivedCommandID = 0;
+byte receivedCommandData = 0;
+byte receivedCommandEnd = 0;
 
 // End Packet Section
 
@@ -101,6 +159,11 @@ void setup()
   lcd.begin(20, 4);
   
   lcd.createChar(0, cuore);
+  lcd.createChar(1, battery[0]);
+  lcd.createChar(2, battery[1]);
+  lcd.createChar(3, battery[2]);
+  lcd.createChar(4, battery[3]);
+  lcd.createChar(5, battery[4]);
   
   lcd.setCursor(3,1);
   lcd.print("Starting up...");
@@ -224,6 +287,8 @@ void loop() {
     lcd.print(damages[receivedDamageID]);
     lcd.print(" ");
     lcd.write(byte(0));
+  } else if(receivedDataLength == 24){
+    // We received a command!
   }
   
   
@@ -252,4 +317,9 @@ void resetReceivedData(){
   receivedPlayerID = 0;
   receivedPlayerTeam = 0;
   receivedDamageID = 0;
+  
+  // Command section
+  receivedCommandID = 0;
+  receivedCommandData = 0;
+  receivedCommandEnd = 0;
 }

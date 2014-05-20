@@ -1,6 +1,10 @@
 //#define DEBUG
 
+#define HZ_FREQ 38
+
 #include <IRremote.h>
+
+#define DEBUG
 
 IRsend irsend;
 
@@ -13,7 +17,7 @@ byte damages[] = {1, 2, 4, 5, 7, 10, 15, 17, 20, 25, 30, 35, 40, 50, 75, 100};
 
 
 unsigned long dataToSend;
-unsigned int dataToSendLength;
+unsigned long dataToSendLength;
 
 
 void setup()
@@ -26,10 +30,11 @@ void loop() {
   
   // Reset the data to send
   resetDataToSend();
+  
   Serial.println("Shot or Command");
-  int typeOfCommand = waitForInput();
-  if(typeOfCommand == 'S' || typeOfCommand && 's'){
-    Serial.println("Shot command:");
+  char typeOfCommand = waitForInput();
+  if(typeOfCommand == 'S' || typeOfCommand == 's'){
+    Serial.println("Shot");
     while(1){
       Serial.println("Insert Player ID (MUST be between 0 and 127)");
       tempPlayerID = waitForIntInput();
@@ -44,7 +49,7 @@ void loop() {
     while(1){
       Serial.println("Insert Team ID (MUST be between 0 and 7)");
       tempPlayerTeam = waitForIntInput();
-      if(tempPlayerTeam <= 3 && tempPlayerTeam >= 0){ 
+      if(tempPlayerTeam <= 7 && tempPlayerTeam >= 0){ 
         addDataToSend(3, tempPlayerTeam, 0x4, true); // 0x4 == 0b 100
         Serial.print(tempPlayerTeam);
         Serial.println(": OK.");
@@ -71,24 +76,50 @@ void loop() {
       }
     }  
     
+    dataToSendLength += 2;
+    
+    #ifdef DEBUG
+    Serial.print("PCKT LNGHT ");
+    Serial.println(dataToSendLength);
+    #endif
+    
     digitalWrite(13, HIGH);
-    irsend.sendDtag(dataToSend, 16, 38);
+    sendData();
     digitalWrite(13, LOW);
     Serial.println("Sent.\n");
     
-  } else if (typeOfCommand == 'S' || typeOfCommand && 's'){
+  } else if (typeOfCommand == 'c' || typeOfCommand == 'C'){
     Serial.println("\nCommand.");
     for(int i=0x80; i<=0x8C; i++){
       Serial.println(i, HEX);
     }
+    switch(waitForIntInput()){
+      case 80:  Serial.println("Add Health. How much? (number from 0 to 255)");
+                addDataToSend(8, 0x80, 0x80, true); //Let's add 0x80 to the code to send
+                int data1 = waitForIntInput();
+                Serial.print(data1);
+                data1 = constrain(data1, 0, 255);
+                Serial.print(" -> ");
+                Serial.println(data1);
+                addDataToSend(8, data1, 0x80, true);
+                addDataToSend(8, 0xE8, 0x80, true);
+                
+    }
+    
+    sendData();
+    
   }
   
+}
+
+void sendData(){
+  irsend.sendDtag(dataToSend, dataToSendLength, HZ_FREQ);
 }
 
 void resetDataToSend(){
   dataToSend = 0;
   dataToSendLength = 0;
-  #ifdef DEGBUG
+  #ifdef DEBUG
   Serial.println("Reset dataToSend");
   #endif
 }
