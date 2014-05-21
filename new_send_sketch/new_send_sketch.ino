@@ -18,6 +18,7 @@ byte damages[] = {1, 2, 4, 5, 7, 10, 15, 17, 20, 25, 30, 35, 40, 50, 75, 100};
 
 unsigned long dataToSend;
 unsigned long dataToSendLength;
+int data1;
 
 
 void setup()
@@ -96,14 +97,38 @@ void loop() {
     switch(waitForIntInput()){
       case 80:  Serial.println("Add Health. How much? (number from 0 to 255)");
                 addDataToSend(8, 0x80, 0x80, true); //Let's add 0x80 to the code to send
-                int data1 = waitForIntInput();
+                data1 = waitForIntInput();
                 Serial.print(data1);
                 data1 = constrain(data1, 0, 255);
                 Serial.print(" -> ");
                 Serial.println(data1);
                 addDataToSend(8, data1, 0x80, true);
                 addDataToSend(8, 0xE8, 0x80, true);
+                break;
                 
+      case 81:  Serial.println("Add Rounds. How many? (number from 0 to 255)");
+                addDataToSend(8, 0x81, 0x80, true);
+                data1 = waitForIntInput();
+                Serial.print(data1);
+                data1 = constrain(data1, 0, 255);
+                Serial.print(" -> ");
+                Serial.println(data1);
+                addDataToSend(8, data1, 0x80, true);
+                addDataToSend(8, 0xE8, 0x80, true);
+                break;
+            
+      case 83:  Serial.print("Command Number ");
+                while(1){
+                  data1 = waitForIntInput();
+                  if(data1 >=0 && data1 <= 17){
+                    break;
+                  }
+                }
+                Serial.print(data1);
+                addDataToSend(8, 0x83, 0x80, true);
+                addDataToSend(8, data1, 0x80, true);
+                addDataToSend(8, 0xE8, 0x80, true);
+                break;
     }
     
     sendData();
@@ -119,6 +144,7 @@ void sendData(){
 void resetDataToSend(){
   dataToSend = 0;
   dataToSendLength = 0;
+  data1 = 20;
   #ifdef DEBUG
   Serial.println("Reset dataToSend");
   #endif
