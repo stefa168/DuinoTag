@@ -1,5 +1,3 @@
-
-
 #define DEBUG
 
 #define LCD_DELAY 300
@@ -158,6 +156,7 @@ void setup()
   lcd.createChar(2, battery[3]);
   lcd.createChar(3, battery[2]);
   lcd.createChar(4, battery[1]);
+  lcd.createChar(5, battery[0]);
   
   lcd.setCursor(3,1);
   lcd.print("Starting up...");
@@ -220,6 +219,7 @@ void loop() {
     
     // We got a command
     case 2: Serial.println("Got a command!");
+            applyCommand();
             break;
   }
   
@@ -254,7 +254,7 @@ void applyCommand(){
 }
 
 void singleCommand(){
-  switch(receivedCommandID){
+  switch(receivedCommandData){
     // Admin kill
     case 0x00:  addHealth(-playerHealth);
                 break;
