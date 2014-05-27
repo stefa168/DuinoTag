@@ -121,6 +121,20 @@ void loop() {
       addDataToSend(8, 0xE8, 0x80, true);
       break;
 
+    case 82:
+      Serial.print("Team Number");
+      while(1){
+        data1 = waitForIntInput();
+        if(data1 >=0 && data1 <= 7){
+          break;
+        }
+      }
+      Serial.print(data1);
+      addDataToSend(8, 0x82, 0x80, true);
+      addDataToSend(8, data1, 0x80, true);
+      addDataToSend(8, 0xE8, 0x80, true);
+      break;
+
     case 83:  
       Serial.print("Command Number ");
       while(1){

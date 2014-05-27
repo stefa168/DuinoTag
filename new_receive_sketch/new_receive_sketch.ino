@@ -71,6 +71,15 @@ byte battery[][8] = {{ 0b01110,
                        0b11111 }
                     };
 
+byte shield[8] = { 0b00000,
+                   0b11111,
+                   0b10001,
+                   0b10101,
+                   0b10001,
+                   0b11111,
+                   0b00000,
+                   0b00000
+                 };
 
 // Packet Section
 unsigned long receivedData = 0;
@@ -92,12 +101,16 @@ byte receivedCommandEnd = 0;
 // Player Section
 unsigned long toSendData = 0;
 byte playerID = 0;
+int playerMaxHealth = 0;
 int playerHealth = 0;
 byte playerTeam = 1; // Team 1 is NULL team / dead team
 byte playerArmor = 0;
 int ammo = 0;
 
+const int maxHealth = 100;
 const int startHealth = 100;
+
+const int maxAmmo = 50;
 const int startAmmo = 50;
 // End Player Section
 
@@ -118,12 +131,12 @@ byte teamColor[][3] = { {255, 255, 255}, // White/Admin/Referee Team
                       
 String teamNames[] = {"Admin",
                       "Dead",
-                      "Red",
-                      "Green",
-                      "Blue",
-                      "Yellow",
-                      "Cyan",
-                      "Violet"
+                      "Red",   // Alpha
+                      "Green", // Bravo
+                      "Blue",  // Charlie
+                      "Yellow",// Delta
+                      "Cyan",  // Echo
+                      "Violet" // Foxtrot
                       };
 
 unsigned long batteryTimer = 0;
@@ -145,7 +158,7 @@ byte dataInfo = 0;
 #define RledPIN 5
 #define GledPIN 6
 #define BledPIN 9
-// End COnnection Settings
+// End Connection Settings
 
 void setup()
 {
@@ -157,6 +170,7 @@ void setup()
   lcd.createChar(3, battery[2]);
   lcd.createChar(4, battery[1]);
   lcd.createChar(5, battery[0]);
+  lcd.createChar(6, shield);
   
   lcd.setCursor(3,1);
   lcd.print("Starting up...");
@@ -196,6 +210,7 @@ void setup()
   state = 1; // 1 Means Stand-by State.
   delay(800);
   lcd.clear();
+  lcd.noDisplay();
   
   updateBattery();
   
@@ -233,23 +248,28 @@ void loop() {
 }
 
 void applyCommand(){
-  /*
-  byte receivedCommandID = 0;
-  byte receivedCommandData = 0;
-  byte receivedCommandEnd = 0;
-  */
   switch(receivedCommandID){
+   // Health pickup
+   case 0x8B: 
+   // Add Ammo Command
    case 0x80:  addHealth(receivedCommandData);
                break;
-           
+   // Clips pickup
+   case 0x8A: 
+   // Add Ammo command
    case 0x81:  addAmmo(receivedCommandData);
                break;
                
-   case 0x82:  //setTeam();
+   case 0x82:  setTeam(receivedCommandData);
                break;
                
    case 0x83:  singleCommand();
                break;
+               
+   // Flag Pickup
+   case 0x8C:  // Pick Flag
+               break;
+   
   }
 }
 
@@ -286,28 +306,62 @@ void singleCommand(){
     case 0x0a:  state = 2;  // State 2 means that we are initializing but not ready for game
                 addHealth(startHealth);
                 addAmmo(startAmmo);
+                lcd.display();
                 break;
+    // Explode Player
+    case 0x0b:  //TODO
+                break;
+    // New game (prepare)
+    case 0x0c:  //TODO
+                break;
+    // Full Health
+    case 0x0d:  //TODO
+                break;
+    // Full Armor
+    case 0x0f:  //TODO
+                break;
+    // Clear Scores
+    case 0x14:  //TODO
+                break;
+    // Test sensors
+    case 0x15:  //TODO
+                break;
+    // Stun player
+    case 0x16:  //TODO
+                break;
+    // Disarm Player
+    case 0x17:  //TODO
+                break;
+    
   }
 }
 
 void setTeam(byte team){
-  // We update team only if state is 2.
-  if(state == 2){
-    playerTeam = receivedCommandData;
-    applyColor(receivedCommandData);
+  if(team > 7){
+    team == 1;
   }
+  
+  #ifdef DEBUG
+  Serial.print("Setting Team: ");
+  Serial.println(team);
+  #endif
+  
+  playerTeam = team;
+  applyColor(team);
 }
 
 void addAmmo(int loc_ammo){
   #ifdef DEBUG
-  Serial.println("Adding ammo");
+  Serial.println("Adding ammo: ");
+  Serial.println(loc_ammo);
   #endif
   ammo += loc_ammo;
 }
 
 void addHealth(int loc_health){
   #ifdef DEBUG
-  Serial.println("Adding health");
+  Serial.println("Adding health: ");
+  Serial.println(loc_health);
   #endif
   playerHealth += loc_health;
 }
@@ -340,6 +394,7 @@ void updateLCD(){
   
   lcd.clear();
   
+  // Row 0
   // Battery section
   lcd.setCursor(15,0);
   lcd.write(byte(charge));
@@ -352,6 +407,12 @@ void updateLCD(){
   lcd.write("%");
   
   LCDtimer = millis() + LCD_DELAY;
+  
+  // Row 1
+  
+  // Row 2
+  lcd.setCursor(0,2);
+  lcd.write(byte(0));
 }
 
 void updateBattery(){
