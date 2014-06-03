@@ -1,17 +1,17 @@
-#define DEBUG
+//#define DEBUG
 
 #define LCD_DELAY 300
 #define BATTERY_DELAY 60
 
 // Receiver section
 #include <IRremote.h>
-int RECV_PIN = 11;
+int RECV_PIN = 2;
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 // End Receiver section
 
 
-#include <LiquidCrystal.h>
+/*#include <LiquidCrystal.h>
 LiquidCrystal lcd(7, 8, 2, 4, 10, 12);
 
 byte cuore[8] = {  0b00000,
@@ -80,7 +80,7 @@ byte shield[8] = { 0b00000,
                    0b00000,
                    0b00000
                  };
-
+*/
 // Packet Section
 unsigned long receivedData = 0;
 unsigned int receivedDataLength = 0;
@@ -161,7 +161,7 @@ byte dataInfo = 0;
 // End Connection Settings
 
 void setup()
-{
+{/*
   lcd.begin(20, 4);
   
   lcd.createChar(0, cuore);
@@ -171,50 +171,31 @@ void setup()
   lcd.createChar(4, battery[1]);
   lcd.createChar(5, battery[0]);
   lcd.createChar(6, shield);
-  
-  lcd.setCursor(3,1);
-  lcd.print("Starting up...");
-  
-  delay(900);
+  */
+  Serial.begin(115200);
   
   #ifdef DEBUG
-  Serial.begin(115200);
   Serial.println("Version 1.3 R1");
   #endif
-  
-  lcd.setCursor(3,2);
-  lcd.print("Version 1.3 R1");
-  
-  delay(2100);
-  
-  lcd.clear();
-  lcd.setCursor(3,1);
-  lcd.print("Testing leds..");
   
   pinMode(RledPIN, OUTPUT);
   pinMode(GledPIN, OUTPUT);
   pinMode(BledPIN, OUTPUT);
   
-  for(int i=0; i<8; i++){
-    applyColor(i);
-    delay(230);
-  }
-  applyColor(1);
-  lcd.clear();
-  lcd.setCursor(3,1);
-  lcd.print("Starting IR..");
-  irrecv.enableIRIn(); // Start the receiver
-  lcd.setCursor(7,2);
-  lcd.print("Done");
+  testSensors();
   
   state = 1; // 1 Means Stand-by State.
   delay(800);
+  /*
   lcd.clear();
   lcd.noDisplay();
   
   updateBattery();
   
   LCDtimer = millis() + LCD_DELAY;
+  */
+  
+  irrecv.enableIRIn();
 }
 
 void loop() {
@@ -237,14 +218,14 @@ void loop() {
             applyCommand();
             break;
   }
-  
+  /*
   if(state != 1){
     updateBattery();
   
     // We update the LCD with new informations, but we do this only at the end!
     updateLCD();
   }
-  
+  */
 }
 
 void applyCommand(){
@@ -306,7 +287,7 @@ void singleCommand(){
     case 0x0a:  state = 2;  // State 2 means that we are initializing but not ready for game
                 addHealth(startHealth);
                 addAmmo(startAmmo);
-                lcd.display();
+                //lcd.display();
                 break;
     // Explode Player
     case 0x0b:  //TODO
@@ -324,7 +305,7 @@ void singleCommand(){
     case 0x14:  //TODO
                 break;
     // Test sensors
-    case 0x15:  //TODO
+    case 0x15:  testSensors();
                 break;
     // Stun player
     case 0x16:  //TODO
@@ -371,7 +352,7 @@ void getNewRawData(){
   if (irrecv.decode(&results)) {
     receivedData = results.value;
     receivedDataLength = results.bits;
-    #ifdef DEBUG
+    //#ifdef DEBUG
     Serial.println("\n\nNew Code:");
     Serial.print("Length: ");
     Serial.println(receivedDataLength);
@@ -381,11 +362,11 @@ void getNewRawData(){
     Serial.println(receivedData, DEC);
     Serial.print("BIN: ");
     Serial.println(receivedData, BIN);
-    #endif
+    //#endif
     irrecv.resume(); // Receive the next value
   }
 }
-
+/*
 void updateLCD(){
   // We mustn't update very often, otherwise the screen becomes unreadable!
   if(LCDtimer > millis()){
@@ -428,7 +409,7 @@ void updateBattery(){
 
   }
 }
-
+*/
 void analyzeRawData(){
   // User
   if(receivedDataLength == 16){
@@ -546,6 +527,14 @@ void analyzeRawData(){
   
   return;
   
+}
+
+void testSensors(){
+  for(int i=0; i<8; i++){
+    applyColor(i);
+    delay(230);
+  }
+  applyColor(playerTeam);
 }
 
 void applyColor(byte team){
