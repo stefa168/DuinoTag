@@ -30,12 +30,21 @@ void setup()
 
 void loop() {
 
-  // Reset the data to send
-  resetDataToSend();
-
-  Serial.println("Shot or Command");
+  Serial.println("Shot, Command or Repeat");
   char typeOfCommand = waitForInput();
-  if(typeOfCommand == 'S' || typeOfCommand == 's'){
+  if(typeOfCommand == 'R' || typeOfCommand == 'r'){
+    if(dataToSendLength != 0){
+      Serial.println("Repeating...");
+      digitalWrite(13, HIGH);
+      sendData();
+      digitalWrite(13, LOW);
+      Serial.println("Sent.\n");
+    } else {
+      Serial.println("No data");
+    }
+  } else if(typeOfCommand == 'S' || typeOfCommand == 's'){
+    // Reset the data to send
+    resetDataToSend();
     Serial.println("Shot");
     while(1){
       Serial.println("Insert Player ID (MUST be between 0 and 127)");
@@ -92,6 +101,8 @@ void loop() {
 
   } 
   else if (typeOfCommand == 'c' || typeOfCommand == 'C'){
+    // Reset the data to send
+    resetDataToSend();
     Serial.println("\nCommand.");
     for(int i=0x80; i<=0x8C; i++){
       Serial.println(i, HEX);
@@ -139,7 +150,7 @@ void loop() {
       Serial.print("Command Number ");
       while(1){
         data1 = waitForIntInput();
-        if(data1 >=0 && data1 <= 17){
+        if(data1 >=0 && data1 <= 23){
           break;
         }
       }
